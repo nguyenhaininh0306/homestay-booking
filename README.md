@@ -4,8 +4,10 @@ Monorepo gồm 2 phần:
 
 | Thư mục  | Công nghệ                                      | Port |
 | -------- | ---------------------------------------------- | ---- |
-| `client` | Next.js 15 (App Router), React 19, Context API, Tailwind CSS | 3000 |
+| `client` | Next.js 15 (App Router), React 19, Context API, Tailwind CSS, NextAuth v5 | 3000 |
 | `server` | Node.js, Express 4, MongoDB (Mongoose), JWT    | 5000 |
+
+Hỗ trợ hai cách đăng nhập: **email/mật khẩu** và **Google OAuth**.
 
 ## Yêu cầu
 
@@ -32,6 +34,30 @@ Kiểm tra kết nối trước khi chạy server:
 ```bash
 cd server && npm run check-db
 ```
+
+## Setup đăng nhập Google
+
+1. Vào [console.cloud.google.com](https://console.cloud.google.com) → tạo project mới
+2. **APIs & Services → OAuth consent screen** → chọn **External** → điền tên app và email → Save
+3. Mục **Audience** → **Test users** → thêm email Google sẽ dùng để test (app ở chế độ Testing chỉ cho test user đăng nhập)
+4. **Credentials → Create Credentials → OAuth client ID** → loại **Web application**
+5. **Authorized JavaScript origins**: `http://localhost:3000`
+6. **Authorized redirect URIs**: `http://localhost:3000/api/auth/callback/google`
+7. Copy **Client ID** và **Client Secret** vào file env:
+
+```bash
+# client/.env.local
+AUTH_SECRET=<sinh bang: npx auth secret>
+AUTH_GOOGLE_ID=<client id>
+AUTH_GOOGLE_SECRET=<client secret>
+
+# server/.env
+GOOGLE_CLIENT_ID=<client id, phai trung voi AUTH_GOOGLE_ID>
+```
+
+> Sai `Authorized redirect URIs` là nguyên nhân phổ biến nhất gây lỗi `redirect_uri_mismatch`.
+
+Backend cần chung `GOOGLE_CLIENT_ID` để verify `id_token` mà NextAuth gửi sang.
 
 ## Chạy backend
 
@@ -68,6 +94,7 @@ Web chạy tại `http://localhost:3000`.
 | ------ | ---------------------------- | ----------- | ------------------------ |
 | POST   | `/api/auth/register`         | —           | Đăng ký                  |
 | POST   | `/api/auth/login`            | —           | Đăng nhập                |
+| POST   | `/api/auth/google`           | —           | Đổi Google id_token lấy JWT |
 | GET    | `/api/auth/me`               | Bearer      | Thông tin tài khoản      |
 | GET    | `/api/homestays`             | —           | Danh sách + lọc/phân trang |
 | GET    | `/api/homestays/:slug`       | —           | Chi tiết homestay        |
@@ -96,14 +123,16 @@ server/src
 
 client/src
 ├── app/                    App Router: /, /homestays, /homestays/[slug], /login, /register, /bookings
-├── components/             Header, Footer, SearchBar, HomestayCard, BookingForm
+├── components/             Header, Footer, SearchBar, HomestayCard, BookingForm, GoogleLoginButton
+├── auth.js                 cấu hình NextAuth (Google provider)
+├── app/api/auth/[...nextauth]/route.js   route handler của NextAuth
 ├── context/                AuthContext, SearchContext, BookingContext, AppProviders
 └── lib/api.js              fetch wrapper + format tiền/ngày
 ```
 
 ## Quản lý state bằng Context API
 
-- **AuthContext** — user, token (localStorage), `login`/`register`/`logout`, tự khôi phục phiên qua `/auth/me`
+- **AuthContext** — user, token (localStorage), `login`/`register`/`loginWithGoogle`/`logout`, tự khôi phục phiên qua `/auth/me`, đồng bộ phiên Google từ NextAuth
 - **SearchContext** — bộ lọc tìm kiếm, sinh sẵn `queryString` cho trang danh sách
 - **BookingContext** — danh sách đơn, `createBooking`, `cancelBooking`
 
@@ -116,3 +145,19 @@ Cả ba được gộp trong `AppProviders` và bọc ở `app/layout.js`.
 - Trang quản trị cho host: quản lý homestay và duyệt đơn
 - Thanh toán online (VNPay / MoMo)
 - Lịch chặn ngày đã đặt trên UI (hiện mới kiểm tra ở backend)
+
+## Luồng đăng nhập Google
+
+```
+Người dùng → NextAuth (Google provider) → Google trả id_token
+          → callback jwt gọi POST /api/auth/google
+          → backend verify id_token bằng google-auth-library
+          → tạo user mới, hoặc liên kết googleId vào tài khoản cùng email đã có
+          → trả JWT của backend → AuthContext lưu vào localStorage
+```
+
+NextAuth chỉ lo phần xác thực với Google. Token dùng cho mọi request API vẫn là JWT
+của backend, nên các endpoint hiện có không phải sửa gì.
+
+Tài khoản đăng ký bằng Google không có mật khẩu. Nếu thử đăng nhập bằng form
+email/mật khẩu, API trả về thông báo hướng dẫn đăng nhập bằng Google.

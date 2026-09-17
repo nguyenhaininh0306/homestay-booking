@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
+import AuthDivider from '@/components/AuthDivider';
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, authError } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [status, setStatus] = useState({ loading: false, error: '' });
@@ -29,7 +31,13 @@ const LoginPage = () => {
       <h1 className="text-2xl font-bold text-slate-900">Đăng nhập</h1>
       <p className="mt-1 text-sm text-slate-600">Đăng nhập để đặt phòng và quản lý chuyến đi.</p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="mt-6 space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <GoogleLoginButton label="Đăng nhập với Google" />
+        {authError && <p className="text-sm text-red-600">{authError}</p>}
+        <AuthDivider text="hoặc dùng email" />
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-slate-700">Email</span>
           <input
