@@ -42,7 +42,7 @@ const GoogleLoginButton = ({ label = 'Tiếp tục với Google' }) => {
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white py-2.5 font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+      className="flex w-full items-center justify-center gap-3 rounded-xl border border-ink bg-white py-3 text-sm font-semibold text-ink transition hover:bg-surface disabled:opacity-60"
     >
       <GoogleIcon />
       {loading ? 'Đang chuyển tới Google...' : label}

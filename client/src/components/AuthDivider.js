@@ -1,8 +1,8 @@
 const AuthDivider = ({ text = 'hoặc' }) => (
   <div className="flex items-center gap-3">
-    <span className="h-px flex-1 bg-slate-200" />
-    <span className="text-xs uppercase tracking-wide text-slate-400">{text}</span>
-    <span className="h-px flex-1 bg-slate-200" />
+    <span className="h-px flex-1 bg-line" />
+    <span className="text-xs text-ink-muted">{text}</span>
+    <span className="h-px flex-1 bg-line" />
   </div>
 );
 
