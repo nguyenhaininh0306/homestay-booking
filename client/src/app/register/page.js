@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
+import AuthDivider from '@/components/AuthDivider';
 
 const RegisterPage = () => {
   const { register } = useAuth();
@@ -36,7 +38,12 @@ const RegisterPage = () => {
       <h1 className="text-2xl font-bold text-slate-900">Đăng ký tài khoản</h1>
       <p className="mt-1 text-sm text-slate-600">Tạo tài khoản để bắt đầu đặt homestay.</p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="mt-6 space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <GoogleLoginButton label="Đăng ký với Google" />
+        <AuthDivider text="hoặc dùng email" />
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
         {fields.map((field) => (
           <label key={field.key} className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-slate-700">{field.label}</span>

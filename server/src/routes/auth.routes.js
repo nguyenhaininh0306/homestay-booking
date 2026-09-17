@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { register, login, getMe } from '../controllers/auth.controller.js';
+import { register, login, googleLogin, getMe } from '../controllers/auth.controller.js';
 import { protect } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 
@@ -22,6 +22,13 @@ router.post(
   [body('email').isEmail().withMessage('Email khong hop le'), body('password').notEmpty()],
   validate,
   login
+);
+
+router.post(
+  '/google',
+  [body('credential').notEmpty().withMessage('Thieu Google credential')],
+  validate,
+  googleLogin
 );
 
 router.get('/me', protect, getMe);
