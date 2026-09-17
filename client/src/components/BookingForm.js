@@ -34,7 +34,11 @@ const BookingForm = ({ homestay }) => {
 
     if (!isAuthenticated) return router.push('/login');
     if (nights <= 0) {
-      return setStatus({ loading: false, error: 'Ngày trả phòng phải sau ngày nhận phòng', success: '' });
+      return setStatus({
+        loading: false,
+        error: 'Ngày trả phòng phải sau ngày nhận phòng',
+        success: '',
+      });
     }
 
     setStatus({ loading: true, error: '', success: '' });
@@ -47,87 +51,95 @@ const BookingForm = ({ homestay }) => {
     }
   };
 
+  const cell = 'flex flex-col px-3 py-2 text-left';
+  const cellLabel = 'text-[10px] font-bold uppercase tracking-wide text-ink';
+  const cellInput = 'w-full bg-transparent text-sm text-ink focus:outline-none';
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="space-y-4 rounded-card border border-line bg-white p-6 shadow-booking"
     >
-      <p className="text-lg font-semibold text-slate-900">
-        {formatPrice(homestay.pricePerNight)}
-        <span className="text-sm font-normal text-slate-500"> / đêm</span>
+      <p className="text-ink">
+        <span className="text-[22px] font-semibold">{formatPrice(homestay.pricePerNight)}</span>
+        <span className="text-ink-muted"> / đêm</span>
       </p>
 
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <label className="flex flex-col gap-1">
-          <span className="font-medium text-slate-700">Nhận phòng</span>
+      <div className="overflow-hidden rounded-xl border border-line">
+        <div className="grid grid-cols-2 divide-x divide-line border-b border-line">
+          <label className={cell}>
+            <span className={cellLabel}>Nhận phòng</span>
+            <input
+              type="date"
+              required
+              value={form.checkIn}
+              onChange={handleChange('checkIn')}
+              className={cellInput}
+            />
+          </label>
+          <label className={cell}>
+            <span className={cellLabel}>Trả phòng</span>
+            <input
+              type="date"
+              required
+              value={form.checkOut}
+              onChange={handleChange('checkOut')}
+              className={cellInput}
+            />
+          </label>
+        </div>
+
+        <label className={cell}>
+          <span className={cellLabel}>Khách (tối đa {homestay.maxGuests})</span>
           <input
-            type="date"
-            required
-            value={form.checkIn}
-            onChange={handleChange('checkIn')}
-            className="rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-brand-500"
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="font-medium text-slate-700">Trả phòng</span>
-          <input
-            type="date"
-            required
-            value={form.checkOut}
-            onChange={handleChange('checkOut')}
-            className="rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-brand-500"
+            type="number"
+            min={1}
+            max={homestay.maxGuests}
+            value={form.guests}
+            onChange={handleChange('guests')}
+            className={cellInput}
           />
         </label>
       </div>
 
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-slate-700">Số khách (tối đa {homestay.maxGuests})</span>
-        <input
-          type="number"
-          min={1}
-          max={homestay.maxGuests}
-          value={form.guests}
-          onChange={handleChange('guests')}
-          className="rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-brand-500"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-slate-700">Ghi chú</span>
+        <span className="font-medium text-ink">Ghi chú cho chủ nhà</span>
         <textarea
-          rows={3}
+          rows={2}
           value={form.note}
           onChange={handleChange('note')}
-          placeholder="Yêu cầu thêm cho chủ nhà..."
-          className="resize-none rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-brand-500"
+          placeholder="Yêu cầu thêm..."
+          className="resize-none rounded-xl border border-line px-3 py-2 text-sm outline-none focus:border-ink"
         />
       </label>
 
-      {nights > 0 && (
-        <div className="space-y-1 border-t border-slate-200 pt-3 text-sm">
-          <div className="flex justify-between text-slate-600">
-            <span>
-              {formatPrice(homestay.pricePerNight)} x {nights} đêm
-            </span>
-            <span>{formatPrice(total)}</span>
-          </div>
-          <div className="flex justify-between font-semibold text-slate-900">
-            <span>Tổng cộng</span>
-            <span>{formatPrice(total)}</span>
-          </div>
-        </div>
-      )}
-
-      {status.error && <p className="text-sm text-red-600">{status.error}</p>}
-      {status.success && <p className="text-sm text-green-600">{status.success}</p>}
+      {status.error && <p className="text-sm text-brand-600">{status.error}</p>}
+      {status.success && <p className="text-sm text-green-700">{status.success}</p>}
 
       <button
         type="submit"
         disabled={status.loading}
-        className="w-full rounded-lg bg-brand-600 py-2.5 font-medium text-white transition hover:bg-brand-700 disabled:opacity-60"
+        className="w-full rounded-pill bg-brand-600 py-3.5 font-semibold text-white transition hover:bg-brand-700 disabled:opacity-60"
       >
         {status.loading ? 'Đang xử lý...' : isAuthenticated ? 'Đặt phòng' : 'Đăng nhập để đặt'}
       </button>
+
+      {nights > 0 ? (
+        <div className="space-y-3 pt-2 text-ink">
+          <div className="flex justify-between">
+            <span className="underline">
+              {formatPrice(homestay.pricePerNight)} x {nights} đêm
+            </span>
+            <span>{formatPrice(total)}</span>
+          </div>
+          <div className="flex justify-between border-t border-line pt-3 font-semibold">
+            <span>Tổng cộng</span>
+            <span>{formatPrice(total)}</span>
+          </div>
+        </div>
+      ) : (
+        <p className="text-center text-sm text-ink-muted">Bạn chưa bị trừ tiền</p>
+      )}
     </form>
   );
 };

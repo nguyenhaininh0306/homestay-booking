@@ -1,4 +1,4 @@
-# HomestayViet — Website đặt phòng homestay
+# airkido — Website đặt phòng homestay
 
 Monorepo gồm 2 phần:
 
